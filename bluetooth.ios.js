@@ -3,7 +3,7 @@ var Bluetooth = require("./bluetooth-common");
 Bluetooth._state = {
   manager: null,
   centralDelegate: null,
-  peripheralArray: null,
+  peripheralArray: NSMutableArray.new(),
   connectCallbacks: {},
   disconnectCallbacks: {},
   onDiscovered: null
@@ -252,6 +252,11 @@ var CBCentralManagerDelegateImpl = (function (_super) {
       Bluetooth._state.peripheralArray.addObject(peripheral);
     }
     if (Bluetooth._state.onDiscovered) {
+      var localName = null;
+      if(advData.objectForKey(CBAdvertisementDataLocalNameKey)) {
+        localName = advData.objectForKey(CBAdvertisementDataLocalNameKey);
+        console.log("----- delegate centralManager:didDiscoverPeripheral, localName: " + localName);
+      }
       var manufacturerId, manufacturerData;
       if (advData.objectForKey(CBAdvertisementDataManufacturerDataKey)) {
         var manufacturerIdBuffer = Bluetooth._toArrayBuffer(advData.objectForKey(CBAdvertisementDataManufacturerDataKey).subdataWithRange(NSMakeRange(0, 2)));
@@ -261,7 +266,7 @@ var CBCentralManagerDelegateImpl = (function (_super) {
 
       Bluetooth._state.onDiscovered({
         UUID: peripheral.identifier.UUIDString,
-        name: peripheral.name,
+        name: localName ? localName : peripheral.name,
         RSSI: RSSI,
         state: Bluetooth._getState(peripheral.state),
         manufacturerId: manufacturerId,
@@ -309,8 +314,7 @@ var CBCentralManagerDelegateImpl = (function (_super) {
     } else {
       console.log("----- !!! no disconnect callback found");
     }
-    var foundAt = Bluetooth._state.peripheralArray.indexOfObject(peripheral);
-    Bluetooth._state.peripheralArray.removeObject(foundAt);
+
   };
 
   CBCentralManagerDelegateImpl.prototype.centralManagerDidFailToConnectPeripheralError = function (central, peripheral, error) {
@@ -379,8 +383,8 @@ Bluetooth.isBluetoothEnabled = function () {
 
 Bluetooth.enable = function () {
   return new Promise(function (resolve, reject) {
-    console.log("Not possible on iOS");
-    reject("Not possible - you may want to choose to not call this function on iOS.");
+    console.log("Enable Bluetooth not possible on iOS");
+    reject("Bluetooth is not enabled!");
   });
 };
 
@@ -391,7 +395,7 @@ Bluetooth.startScanning = function (arg) {
         reject("Bluetooth is not enabled");
         return;
       }
-      Bluetooth._state.peripheralArray = NSMutableArray.new();
+
 
       // TODO actualy, should init the delegate here with this as the callback (see 'onConnected') --> but first test if that works
       Bluetooth._state.onDiscovered = arg.onDiscovered;
