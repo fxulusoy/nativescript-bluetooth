@@ -111,8 +111,8 @@ Bluetooth._connections = {};
         console.log("------- scanCallback.onScanFailed errorMessage: " + errorMessage);
       },
       onScanResult: function (callbackType, result) {
-        var stateObject = Bluetooth._connections[result.getDevice().getAddress()];
-        if (!stateObject) {
+        // var stateObject = Bluetooth._connections[result.getDevice().getAddress()];
+        // if (!stateObject) {
           Bluetooth._connections[result.getDevice().getAddress()] = {
             state: 'disconnected'
           };
@@ -133,7 +133,7 @@ Bluetooth._connections = {};
           };
           console.log("---- Lollipop+ scanCallback result: " + JSON.stringify(payload));
           onDiscovered(payload);
-        }
+        // }
       }
     });
     Bluetooth._scanCallback = new MyScanCallback();
@@ -161,8 +161,8 @@ Bluetooth._connections = {};
     Bluetooth._scanCallback = new android.bluetooth.BluetoothAdapter.LeScanCallback({
       // see https://github.com/randdusing/cordova-plugin-bluetoothle/blob/master/src/android/BluetoothLePlugin.java#L2181
       onLeScan: function (device, rssi, scanRecord) {
-        var stateObject = Bluetooth._connections[device.getAddress()];
-        if (!stateObject) {
+        // var stateObject = Bluetooth._connections[device.getAddress()];
+        // if (!stateObject) {
           Bluetooth._connections[device.getAddress()] = {
             state: 'disconnected'
           };
@@ -185,7 +185,7 @@ Bluetooth._connections = {};
           };
           console.log("---- scanCallback result: " + JSON.stringify(payload));
           onDiscovered(payload);
-        }
+        // }
       }
     });
   }
