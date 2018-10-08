@@ -250,25 +250,25 @@ var CBCentralManagerDelegateImpl = (function (_super) {
     var peri = Bluetooth._findPeripheral(peripheral.identifier.UUIDString);
     if (!peri) {
       Bluetooth._state.peripheralArray.addObject(peripheral);
-      if (Bluetooth._state.onDiscovered) {
-        var manufacturerId, manufacturerData;
-        if (advData.objectForKey(CBAdvertisementDataManufacturerDataKey)) {
-          var manufacturerIdBuffer = Bluetooth._toArrayBuffer(advData.objectForKey(CBAdvertisementDataManufacturerDataKey).subdataWithRange(NSMakeRange(0, 2)));
-          manufacturerId = new DataView(manufacturerIdBuffer, 0).getUint16(0, true);
-          manufacturerData = Bluetooth._toArrayBuffer(advData.objectForKey(CBAdvertisementDataManufacturerDataKey).subdataWithRange(NSMakeRange(2, advData.objectForKey(CBAdvertisementDataManufacturerDataKey).length - 2)));
-        }
-
-        Bluetooth._state.onDiscovered({
-          UUID: peripheral.identifier.UUIDString,
-          name: peripheral.name,
-          RSSI: RSSI,
-          state: Bluetooth._getState(peripheral.state),
-          manufacturerId: manufacturerId,
-          manufacturerData: manufacturerData
-        });
-      } else {
-        console.log("----- !!! No onDiscovered callback specified");
+    }
+    if (Bluetooth._state.onDiscovered) {
+      var manufacturerId, manufacturerData;
+      if (advData.objectForKey(CBAdvertisementDataManufacturerDataKey)) {
+        var manufacturerIdBuffer = Bluetooth._toArrayBuffer(advData.objectForKey(CBAdvertisementDataManufacturerDataKey).subdataWithRange(NSMakeRange(0, 2)));
+        manufacturerId = new DataView(manufacturerIdBuffer, 0).getUint16(0, true);
+        manufacturerData = Bluetooth._toArrayBuffer(advData.objectForKey(CBAdvertisementDataManufacturerDataKey).subdataWithRange(NSMakeRange(2, advData.objectForKey(CBAdvertisementDataManufacturerDataKey).length - 2)));
       }
+
+      Bluetooth._state.onDiscovered({
+        UUID: peripheral.identifier.UUIDString,
+        name: peripheral.name,
+        RSSI: RSSI,
+        state: Bluetooth._getState(peripheral.state),
+        manufacturerId: manufacturerId,
+        manufacturerData: manufacturerData
+      });
+    } else {
+      console.log("----- !!! No onDiscovered callback specified");
     }
   };
 
@@ -401,7 +401,7 @@ Bluetooth.startScanning = function (arg) {
       for (var s in serviceUUIDs) {
         services.push(CBUUID.UUIDWithString(serviceUUIDs[s]));
       }
-      Bluetooth._state.manager.scanForPeripheralsWithServicesOptions(services, null);
+      Bluetooth._state.manager.scanForPeripheralsWithServicesOptions(services, new NSDictionary([NSNumber.numberWithInt(1)], [CBCentralManagerScanOptionAllowDuplicatesKey]));
       if (arg.seconds) {
         setTimeout(function () {
           // note that by now a manual 'stop' may have been invoked, but that doesn't hurt
